@@ -1,5 +1,5 @@
-import React, { useContext, useRef, useState } from 'react'
-import { Alert, Button, Card, CardContent, Divider, MenuItem, Stack, TextField, Typography } from '@mui/material'
+import React, { useContext, useState } from 'react'
+import { Alert, Button, Card, CardContent, Divider, MenuItem, Stack, TextField } from '@mui/material'
 import { dependencyManagerProviders } from './DependencyManagerProviders/DependencyManagerProviders'
 import { IsMobileContext } from './Base'
 import { useNavigate } from 'react-router-dom'
@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 function Import() {
     const providers = dependencyManagerProviders
     const navigate = useNavigate()
-    const [canStart, setCanStart] = useState(false)
+    const [textGraph, setTextGraph] = useState('')
     const [provider, setProvider] = useState(providers[0])
     const isMobile: Boolean = useContext(IsMobileContext)
 
@@ -31,10 +31,10 @@ function Import() {
                             <TextField variant='outlined' defaultValue={provider.name} select label='Dependency manager'>
                                 {providers.map((item, index) => <MenuItem key={item.name} value={item.name} onClick={e => setProvider(providers[index])}>{item.name}</MenuItem>)}
                             </TextField>
-                            <TextField variant='outlined' multiline fullWidth label={provider.resolvedFileName} rows={8} onChange={e => { setCanStart(e.target.value != '') }} />
-                            <Button variant='contained' disabled={!canStart}>Start</Button>
+                            <TextField variant='outlined' multiline fullWidth label={provider.resolvedFileName} rows={8} value={textGraph} onChange={e => {setTextGraph(e.target.value)}} />
+                            <Button variant='contained' disabled={textGraph === ''}>Start</Button>
                             <Divider>or</Divider>
-                            <Button variant='outlined' onClick={e => {navigate('/graphViewer')}}>Try a demo</Button>
+                            <Button variant='outlined' onClick={e => navigate('/graphViewer')}>Try a demo</Button>
                         </Stack>
                     </CardContent>
                 </Card>
