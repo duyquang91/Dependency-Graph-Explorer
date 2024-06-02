@@ -1,5 +1,6 @@
-import { SwiftPackageManagerProvider } from "./SwiftPackageManagerProvider";
+import { CocoaPodsProvider } from "./CocoaPodsProvider";
+import { DependencyProviderInterface } from "./DependencyProvider";
 
-export const dependencyManagerProviders = [
-    new SwiftPackageManagerProvider()
+export const dependencyManagerProviders: DependencyProviderInterface[] = [
+    new CocoaPodsProvider()
 ]

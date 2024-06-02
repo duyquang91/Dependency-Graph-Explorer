@@ -1,14 +1,18 @@
 import React from "react"
 import { GraphCanvas } from "reagraph"
 import { MockDependencyProvider } from "./DependencyManagerProviders/DependencyProvider"
+import { useParams } from "react-router-dom"
+import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
 
 function GraphViewer() {
-    const mock = new MockDependencyProvider
+    const { index } = useParams< { index:string } >()
+    const i = index == undefined ? -1 : Number(index) 
+    const provider = i == -1 ? new MockDependencyProvider() : dependencyManagerProviders[i] 
     return (
         <div>
             <GraphCanvas
-                nodes= {mock.graph!.nodes}
-                edges= {mock.graph!.edges}
+                nodes= {provider.graph!.nodes}
+                edges= {provider.graph!.edges}
             />
         </div>
     )

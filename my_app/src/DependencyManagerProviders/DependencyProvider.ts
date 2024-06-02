@@ -1,5 +1,5 @@
 import Graph from 'reagraph'
-import { SwiftPackageManagerProvider } from './SwiftPackageManagerProvider'
+import { CocoaPodsProvider } from './CocoaPodsProvider'
 
 type Graph = {
     nodes: Graph.GraphNode[]
@@ -9,26 +9,20 @@ type Graph = {
 export interface DependencyProviderInterface {
     name: string
     resolvedFileName: string
-    resolvedFile: string | undefined
     isValid: Boolean
     graph: Graph | undefined
+    /**
+    Update `isValid` & `graph` in this func
+    */
+    updateResolvedFile(file: string): void
 }
-
-export const dependencyManagerProviders = [
-    new SwiftPackageManagerProvider()
-]
 
 export class MockDependencyProvider implements DependencyProviderInterface {
     name: string
     resolvedFileName: string
-    resolvedFile: string | undefined
     isValid: Boolean
     graph: Graph | undefined
-    
-    constructor() {
-        this.name = 'Mock'
-        this.resolvedFileName = 'Mock'
-        this.resolvedFile = 'Mock'
+    updateResolvedFile(file: string) {
         this.isValid = true
         this.graph = {
             nodes: [
@@ -50,5 +44,12 @@ export class MockDependencyProvider implements DependencyProviderInterface {
                 }
             ]
         }
+    }
+    
+    constructor() {
+        this.name = 'Mock'
+        this.isValid = false
+        this.resolvedFileName = 'Mock'
+        this.updateResolvedFile('')
     }
 }
