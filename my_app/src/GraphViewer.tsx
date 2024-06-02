@@ -1,11 +1,15 @@
 import React from "react"
-// import * as Viva from "vivagraphjs.js"
+import { GraphCanvas } from "reagraph"
+import { MockDependencyProvider } from "./DependencyManagerProviders/DependencyProvider"
 
 function GraphViewer() {
-
+    const mock = new MockDependencyProvider
     return (
-        <div id="graphDiv">
-            
+        <div>
+            <GraphCanvas
+                nodes= {mock.graph!.nodes}
+                edges= {mock.graph!.edges}
+            />
         </div>
     )
 }
