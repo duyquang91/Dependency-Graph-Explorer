@@ -40,7 +40,7 @@ function Import() {
                             <TextField variant='outlined' multiline fullWidth label={provider.resolvedFileName} rows={8} value={text} onChange={(e) => {setText(e.target.value)}} />
                             <Button variant='contained' disabled={text === ''} onClick={(e) => {startParsing(e)}}>Start</Button>
                             <Divider>or</Divider>
-                            <Button variant='outlined' onClick={(e) => navigate('/graphViewer')}>Try a demo</Button>
+                            <Button variant='outlined' onClick={(e) => navigate('/graphViewer/-1')}>Try a demo</Button>
                         </Stack>
                     </CardContent>
                 </Card>
