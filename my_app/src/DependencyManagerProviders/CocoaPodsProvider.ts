@@ -1,6 +1,7 @@
 import { GraphNode, GraphEdge } from 'reagraph';
 import { DependencyProviderInterface } from './DependencyProvider'
 import YAML from 'yaml'
+import { string } from 'yaml/dist/schema/common/string';
 
 export class CocoaPodsProvider implements DependencyProviderInterface {
     name: string
@@ -9,20 +10,25 @@ export class CocoaPodsProvider implements DependencyProviderInterface {
     graph: { nodes: GraphNode[]; edges: GraphEdge[]; } | undefined
 
     updateResolvedFile(file: string) {
-        const data = YAML.parse(file) as { PODS: {[key:string]: string[]}[] }
+        const data = YAML.parse(file) as { PODS: any[] }
         if (typeof data === 'object') {
             this.isValid = true
-            var nodes: {id:string, label:string}[] = []
-            data.PODS.forEach(e => 
-                { 
-                    for (const [key, value] of Object.entries(e)) {
-                        nodes.push({id: key, label:key})
+            var nodes: { id: string, label: string }[] = []
+            data.PODS.forEach(e => {
+                if (typeof e === 'string') {
+                    nodes.push({ id: e, label: e })
+                } else {
+                    for (const key in e) {
+                        nodes.push({ id: key, label: key })
+                        const valueArray = e[key];
+                        for (const value of valueArray) {
+                            nodes.push({ id: value, label: value })
+                        }
                     }
                 }
-            )
-            this.graph = {nodes: nodes, edges:[]}
-            console.log(this.graph)
-            } else {
+            })
+            this.graph = { nodes: nodes, edges: [] }
+        } else {
             this.isValid = false
         }
     }

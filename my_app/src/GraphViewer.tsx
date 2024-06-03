@@ -8,6 +8,8 @@ function GraphViewer() {
     const { index } = useParams< { index:string } >()
     const i = index === undefined ? -1 : Number(index) 
     const provider = i === -1 ? new MockDependencyProvider() : dependencyManagerProviders[i] 
+    console.log(i)
+    console.log(provider)
     return (
         <div>
             <GraphCanvas

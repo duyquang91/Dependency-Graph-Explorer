@@ -16,7 +16,7 @@ function Import() {
     }
     const startParsing = (e: React.MouseEvent) => {
         provider.updateResolvedFile(text)
-        navigate('/graphViewer/{selectedIndex}')
+        navigate('/graphViewer/0')
     }
 
     return (

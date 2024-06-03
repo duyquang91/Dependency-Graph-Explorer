@@ -25,7 +25,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Import />} />
-            <Route path="/graphViewer" element={<GraphViewer />} />
+            <Route path="/graphViewer/:index" element={<GraphViewer />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
