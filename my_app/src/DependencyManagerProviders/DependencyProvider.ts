@@ -40,7 +40,6 @@ export class MockDependencyProvider implements DependencyProviderInterface {
                     id: '1->2',
                     source: 'n-1',
                     target: 'n-2',
-                    label: 'Edge 1-2'
                 }
             ]
         }

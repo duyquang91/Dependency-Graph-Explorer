@@ -5,7 +5,7 @@ import Import from './Import';
 import { ThemeProvider } from '@emotion/react';
 import { Card, CardContent, CssBaseline, Paper, createTheme, useMediaQuery } from '@mui/material';
 import GraphViewer from './GraphViewer';
-import { IsMobileContext } from './Base'
+import { IsDarkModeContext, IsMobileContext } from './Base'
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 function App() {
@@ -19,16 +19,18 @@ function App() {
 
   return (
     <IsMobileContext.Provider value={isMobile}>
-      <meta name="viewport" content="initial-scale=1, width=device-width" />
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Import />} />
-            <Route path="/graphViewer/:index" element={<GraphViewer />} />
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
+      <IsDarkModeContext.Provider value={prefersDarkMode}>
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+        <ThemeProvider theme={darkTheme}>
+          <CssBaseline />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Import />} />
+              <Route path="/graphViewer/:index" element={<GraphViewer />} />
+            </Routes>
+          </BrowserRouter>
+        </ThemeProvider>
+      </IsDarkModeContext.Provider>
     </IsMobileContext.Provider>
   )
 }
