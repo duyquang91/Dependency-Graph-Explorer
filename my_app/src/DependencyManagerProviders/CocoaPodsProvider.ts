@@ -9,10 +9,22 @@ export class CocoaPodsProvider implements DependencyProviderInterface {
     graph: { nodes: GraphNode[]; edges: GraphEdge[]; } | undefined
 
     updateResolvedFile(file: string) {
-        this.isValid = true
-        // const data = YAML.parse(file) as Map<string,any>
-        // const dependencies = data.get('DEPENDENCIES') as string[]
-        // console.log(dependencies)
+        const data = YAML.parse(file) as { PODS: {[key:string]: string[]}[] }
+        if (typeof data === 'object') {
+            this.isValid = true
+            var nodes: {id:string, label:string}[] = []
+            data.PODS.forEach(e => 
+                { 
+                    for (const [key, value] of Object.entries(e)) {
+                        nodes.push({id: key, label:key})
+                    }
+                }
+            )
+            this.graph = {nodes: nodes, edges:[]}
+            console.log(this.graph)
+            } else {
+            this.isValid = false
+        }
     }
 
     constructor() {
