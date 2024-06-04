@@ -6,6 +6,20 @@ type Graph = {
     edges: Graph.GraphEdge[]
 }
 
+export interface DependencyProviderInterface {
+  name: string
+  resolvedFileName: string
+  isValid: Boolean
+  graph: Graph | undefined
+  /**
+    Update `isValid` & `graph` in this func
+  */
+  updateResolvedFile(file: string): void
+}
+
+  /**
+    Return a new sub-graph from a roor node
+  */
 export function getSubgraph(nodeId: string, graphData: Graph): Graph {
     const visited = new Set<string>()
     const subgraphNodes: GraphNode[] = []
@@ -30,14 +44,3 @@ export function getSubgraph(nodeId: string, graphData: Graph): Graph {
     traverse(graphData.nodes.find((node) => node.id === nodeId));
     return { nodes: subgraphNodes, edges: subgraphEdges };
   }
-
-export interface DependencyProviderInterface {
-    name: string
-    resolvedFileName: string
-    isValid: Boolean
-    graph: Graph | undefined
-    /**
-    Update `isValid` & `graph` in this func
-    */
-    updateResolvedFile(file: string): void
-}
