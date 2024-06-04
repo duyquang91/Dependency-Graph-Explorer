@@ -1,16 +1,15 @@
-import Graph, { GraphEdge, GraphNode } from 'reagraph'
-import { CocoaPodsProvider } from './CocoaPodsProvider'
+import { GraphEdge, GraphNode } from 'reagraph'
 
-type Graph = {
-    nodes: Graph.GraphNode[]
-    edges: Graph.GraphEdge[]
+type GraphType = {
+    nodes: GraphNode[]
+    edges: GraphEdge[]
 }
 
 export interface DependencyProviderInterface {
   name: string
   resolvedFileName: string
   isValid: Boolean
-  graph: Graph | undefined
+  graph: GraphType | undefined
   /**
     Update `isValid` & `graph` in this func
   */
@@ -20,7 +19,7 @@ export interface DependencyProviderInterface {
   /**
     Return a new sub-graph from a roor node
   */
-export function getSubgraph(nodeId: string, graphData: Graph): Graph {
+export function getSubgraph(nodeId: string, graphData: GraphType): GraphType {
     const visited = new Set<string>()
     const subgraphNodes: GraphNode[] = []
     const subgraphEdges: GraphEdge[] = []
