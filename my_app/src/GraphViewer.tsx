@@ -66,13 +66,14 @@ function GraphViewer() {
         position: 'absolute',
         left: 15,
         top: 15,
-        width: `${ isMobile ? '90%' : '50%' }`,
+        width: `${ isMobile ? '90%' : '40%' }`,
         padding: 1,
       }}>
           <Autocomplete
             options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
             groupBy={(option) => option.firstLetter}
             onChange={(e, v, r) => { rootNodeChanged(v?.id ?? '') }}
+            blurOnSelect
             renderInput={(params) => <TextField {...params} label="Root node:" />}
           />
       </div>
