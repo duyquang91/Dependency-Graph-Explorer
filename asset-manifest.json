@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Dependency-Graph-Explorer/static/css/main.57e8f239.css",
+    "main.js": "/Dependency-Graph-Explorer/static/js/main.62c7005e.js",
+    "static/js/453.68693753.chunk.js": "/Dependency-Graph-Explorer/static/js/453.68693753.chunk.js",
+    "index.html": "/Dependency-Graph-Explorer/index.html",
+    "main.57e8f239.css.map": "/Dependency-Graph-Explorer/static/css/main.57e8f239.css.map",
+    "main.62c7005e.js.map": "/Dependency-Graph-Explorer/static/js/main.62c7005e.js.map",
+    "453.68693753.chunk.js.map": "/Dependency-Graph-Explorer/static/js/453.68693753.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.57e8f239.css",
+    "static/js/main.62c7005e.js"
+  ]
+}
