@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
-    - name: Build and Deploy React app to GitHub Pages
+    - name: Build and Deploy React app to GitHub Pages 
       uses: omkartapale/react-deployment-gh-pages@v1.0.0
       
     
