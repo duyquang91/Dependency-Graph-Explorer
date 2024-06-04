@@ -1,14 +1,12 @@
-import { GraphNode, GraphEdge } from 'reagraph';
-import { DependencyProviderInterface } from './DependencyProvider'
+import { DependencyProviderInterface, Edge, GraphData, Node } from './DependencyProvider'
 import YAML from 'yaml'
-import { string } from 'yaml/dist/schema/common/string';
-import { Comparator, SimpleSet } from 'typescript-super-set';
+import { SimpleSet } from 'typescript-super-set';
 
 export class CocoaPodsProvider implements DependencyProviderInterface {
     name: string
     resolvedFileName: string
     isValid: Boolean
-    graph: { nodes: GraphNode[]; edges: GraphEdge[]; } | undefined
+    graph: GraphData | undefined
 
     constructor() {
         this.name = 'CocoaPods'
@@ -24,17 +22,20 @@ export class CocoaPodsProvider implements DependencyProviderInterface {
         const data = YAML.parse(file) as { PODS: any[] }
         if (typeof data === 'object') {
             this.isValid = true
-            let nodes = new SimpleSet<GraphNode>((obj1, obj2) => obj1.id === obj2.id ? 0 : 1)
-            let edges = new SimpleSet<GraphEdge>((obj1, obj2) => obj1.id === obj2.id ? 0 : 1)
+            let nodes = new SimpleSet<Node>((obj1, obj2) => obj1.id === obj2.id ? 0 : 1)
+            // nodes.add({id: 'PODS'})
+            let edges = new SimpleSet<Edge>((obj1, obj2) => obj1.id === obj2.id ? 0 : 1)
             data.PODS.forEach(e => {
                 if (typeof e === 'string') {
-                    nodes.add({ id: this.removeTextInParentheses(e), label: this.removeTextInParentheses(e) })
-                } else {
+                    nodes.add({ id: this.removeTextInParentheses(e) })
+                    // edges.add({ id: 'PODS' + this.removeTextInParentheses(e), source: 'PODS', target: this.removeTextInParentheses(e) })
+                  } else {
                     for (const key in e) {
-                        nodes.add({ id: this.removeTextInParentheses(key), label: this.removeTextInParentheses(key) })
+                        nodes.add({ id: this.removeTextInParentheses(key) })
+                        // edges.add({ id: 'PODS' + this.removeTextInParentheses(key), source: 'PODS', target: this.removeTextInParentheses(key) })
                         const valueArray = e[key];
                         for (const value of valueArray) {
-                            nodes.add({ id: this.removeTextInParentheses(value), label: this.removeTextInParentheses(value) })
+                            nodes.add({ id: this.removeTextInParentheses(value) })
                             edges.add({ id: this.removeTextInParentheses(key) + this.removeTextInParentheses(value), source: this.removeTextInParentheses(key), target: this.removeTextInParentheses(value) })
                         }
                     }

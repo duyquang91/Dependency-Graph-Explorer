@@ -1,9 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Import from './Import';
 import { ThemeProvider } from '@emotion/react';
-import { Card, CardContent, CssBaseline, Paper, createTheme, useMediaQuery } from '@mui/material';
+import { CssBaseline, createTheme, useMediaQuery } from '@mui/material';
 import GraphViewer from './GraphViewer';
 import { IsDarkModeContext, IsMobileContext } from './Base'
 import { HashRouter, Route, Routes } from 'react-router-dom';
