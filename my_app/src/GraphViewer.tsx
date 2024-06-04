@@ -1,5 +1,5 @@
-import React, { ChangeEvent, ChangeEventHandler, useContext, useState } from "react"
-import { GraphCanvas, darkTheme, lightTheme } from "reagraph"
+import React, { ChangeEvent, ChangeEventHandler, useContext, useEffect, useRef, useState } from "react"
+import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, useSelection } from "reagraph"
 import { DependencyProviderInterface, getSubgraph } from "./DependencyManagerProviders/DependencyProvider"
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
@@ -17,34 +17,65 @@ function MockProvider(): CocoaPodsProvider {
 }
 
 function GraphViewer() {
+    const ref = useRef<GraphCanvasRef | null>(null)
     const { index } = useParams<{ index: string }>()
     const i = index === undefined ? -1 : Number(index)
     const isDarkMode = useContext(IsDarkModeContext)
     const provider = i === -1 ? MockProvider() : dependencyManagerProviders[i]
-    const [graph, setGraph] = useState(provider.graph!)
+    const [nodes, setNodes] = useState(provider.graph!.nodes)
+    const [edges, setEdges] = useState(provider.graph!.edges)
     const rootNodeChanged = (value: string) => {
-        setGraph(getSubgraph(value, provider.graph!))
+        let graph = getSubgraph(value, provider.graph!)
+        setNodes(graph.nodes)
+        setEdges(graph.edges)
     }
-    const options = graph.nodes.map((option) => {
+    const options = provider.graph!.nodes.map((option) => {
         const firstLetter = option.id[0].toUpperCase();
         return {
           firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
           ...option,
-        };
-      });
+        }
+      })
+      useEffect(() => {
+        ref.current?.fitNodesInView()
+        ref.current?.centerGraph()
+        ref.current?.resetControls()
+      }, [nodes, edges])
+
+      const {
+        selections,
+        actives,
+        onNodeClick,
+        onCanvasClick,
+        onNodePointerOver,
+        onNodePointerOut
+      } = useSelection({
+        ref: ref,
+        nodes: nodes,
+        edges: edges,
+        pathSelectionType: 'out',
+        pathHoverType: 'out'
+      })
 
     return (
         <Stack spacing={1}>
             <GraphCanvas
+                ref={ref}
+                selections={selections}
+                actives={actives}
+                onNodeClick={onNodeClick}
+                onCanvasClick={onCanvasClick}
+                onNodePointerOver={onNodePointerOver}
+                onNodePointerOut={onNodePointerOut}
                 theme={isDarkMode ? darkTheme : lightTheme}
-                nodes={graph.nodes}
-                edges={graph.edges}
+                nodes={nodes}
+                edges={edges}
             />
             <Autocomplete
                 options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
                 groupBy={(option) => option.firstLetter}
                 onChange={(e, v, r) => {rootNodeChanged(v!.id)}}
-                renderInput={(params) => <TextField {...params} label="Node" variant='standard' />}
+                renderInput={(params) => <TextField {...params} label="Root node:" variant='standard' />}
             />
         </Stack>
     )

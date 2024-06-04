@@ -16,13 +16,12 @@ export function getSubgraph(nodeId: string, graphData: Graph): Graph {
       subgraphNodes.push(currentNode);
   
       const childEdges = graphData.edges.filter(
-        (edge) => edge.source === currentNode.id || edge.target === currentNode.id
+        (edge) => edge.source === currentNode.id
       );
   
       for (const edge of childEdges) {
-        const connectedNodeId = edge.source === currentNode.id ? edge.target : edge.source;
-        if (!visited.has(connectedNodeId)) {
-          traverse(graphData.nodes.find((node) => node.id === connectedNodeId));
+        if (!visited.has(edge.target)) {
+          traverse(graphData.nodes.find((node) => node.id === edge.target));
         }
         subgraphEdges.push(edge);
       }

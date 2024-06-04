@@ -34,7 +34,7 @@ function Import() {
                     <CardContent>
                         <Stack spacing={2}>
                             <Alert variant='outlined' severity='info'>Choose a Dependency manager then paste its resolved dependency graph file to start exploring</Alert>
-                            <TextField variant='outlined' defaultValue={provider.name} select label='Dependency manager'>
+                            <TextField variant='outlined' defaultValue={provider.name} select label='Dependency manager:'>
                                 {dependencyManagerProviders.map((item, index) => <MenuItem key={item.name} value={item.name} onClick={(e) => {selectIndex(e, index)}}>{item.name} </MenuItem>)}
                             </TextField>
                             <TextField variant='outlined' multiline fullWidth label={provider.resolvedFileName} rows={8} value={text} onChange={(e) => {setText(e.target.value)}} />
