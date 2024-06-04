@@ -6,7 +6,7 @@ import { ThemeProvider } from '@emotion/react';
 import { Card, CardContent, CssBaseline, Paper, createTheme, useMediaQuery } from '@mui/material';
 import GraphViewer from './GraphViewer';
 import { IsDarkModeContext, IsMobileContext } from './Base'
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 
 function App() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
@@ -23,12 +23,12 @@ function App() {
         <meta name="viewport" content="initial-scale=1, width=device-width" />
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />
-          <BrowserRouter>
+          <HashRouter>
             <Routes>
               <Route path="/" element={<Import />} />
               <Route path="/graphViewer/:index" element={<GraphViewer />} />
             </Routes>
-          </BrowserRouter>
+          </HashRouter>
         </ThemeProvider>
       </IsDarkModeContext.Provider>
     </IsMobileContext.Provider>
