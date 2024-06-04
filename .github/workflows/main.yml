@@ -1,0 +1,16 @@
+on:
+  push:
+    branches: master
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Github pages
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+    - name: Build
+      run: npm run build
+    - name: Deploy   
+      run: npm run deploy
+    
