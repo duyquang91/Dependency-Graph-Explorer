@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Dependency-Graph-Explorer/static/css/main.57e8f239.css",
-    "main.js": "/Dependency-Graph-Explorer/static/js/main.ea6ee332.js",
+    "main.css": "/Dependency-Graph-Explorer/static/css/main.c5f60b7f.css",
+    "main.js": "/Dependency-Graph-Explorer/static/js/main.1b457d57.js",
     "static/js/453.3859c3ff.chunk.js": "/Dependency-Graph-Explorer/static/js/453.3859c3ff.chunk.js",
     "index.html": "/Dependency-Graph-Explorer/index.html",
-    "main.57e8f239.css.map": "/Dependency-Graph-Explorer/static/css/main.57e8f239.css.map",
-    "main.ea6ee332.js.map": "/Dependency-Graph-Explorer/static/js/main.ea6ee332.js.map",
+    "main.c5f60b7f.css.map": "/Dependency-Graph-Explorer/static/css/main.c5f60b7f.css.map",
+    "main.1b457d57.js.map": "/Dependency-Graph-Explorer/static/js/main.1b457d57.js.map",
     "453.3859c3ff.chunk.js.map": "/Dependency-Graph-Explorer/static/js/453.3859c3ff.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.57e8f239.css",
-    "static/js/main.ea6ee332.js"
+    "static/css/main.c5f60b7f.css",
+    "static/js/main.1b457d57.js"
   ]
 }
