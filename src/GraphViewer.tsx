@@ -88,7 +88,7 @@ function GraphViewer() {
 
   function ContextMenu() {
     return (
-      <Menu open>
+      <Menu open={false}>
       <MenuItem>Copy</MenuItem>
       <MenuItem>Print</MenuItem>
       <MenuItem>Highlight</MenuItem>
