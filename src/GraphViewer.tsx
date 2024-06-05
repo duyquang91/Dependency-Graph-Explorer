@@ -1,12 +1,12 @@
-import React, { useContext, useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, useSelection, InternalGraphNode, CollapseProps } from "reagraph"
 import { getSubgraph } from "./DependencyManagerProviders/DependencyProvider"
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
 import { IsDarkModeContext, IsMobileContext } from "./Base"
-import { Autocomplete, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, Stack, TextField, Typography } from "@mui/material"
+import { Autocomplete, Menu, MenuItem, TextField } from "@mui/material"
 import { CocoaPodsProvider } from "./DependencyManagerProviders/CocoaPodsProvider"
-import { ThreeEvent } from "@react-three/fiber"
+import { ThreeEvent } from '@react-three/fiber'
 
 function MockProvider(): CocoaPodsProvider {
   const pod = new CocoaPodsProvider()
@@ -15,6 +15,10 @@ function MockProvider(): CocoaPodsProvider {
 }
 
 function GraphViewer() {
+  const [selectedNode, setSelectedNode] = useState('')
+  const [openMenu, setOpenMenu] = useState(false)
+  const [collapsedNodeIds, setCollapsedNodeIds] = useState<string[]>([])
+  const [menuPos, setMenuPos] = useState({top: 0, left: 0})
   const ref = useRef<GraphCanvasRef | null>(null)
   const { index } = useParams<{ index: string }>()
   const i = index === undefined ? -1 : Number(index)
@@ -26,6 +30,7 @@ function GraphViewer() {
   const rootNodeChanged = (value: string) => {
     if (value === '') { return }
     let graph = getSubgraph(value!, provider.graph!)
+    setCollapsedNodeIds([])
     setNodes(graph.nodes)
     setEdges(graph.edges)
   }
@@ -42,10 +47,24 @@ function GraphViewer() {
     ref.current?.resetControls()
   }, [nodes, edges])
 
+  const onNodeClick = ((node: InternalGraphNode, props?: CollapseProps, event?: ThreeEvent<MouseEvent>) => {
+    setSelectedNode(node.id)
+    setMenuPos({top: event?.y ?? 0, left: event?.x ?? 0})
+    setOpenMenu(true)
+  })
+
+  const collapseClick = () => {
+    setOpenMenu(false)
+    if (!collapsedNodeIds.includes(selectedNode)) {
+      setCollapsedNodeIds([...collapsedNodeIds, selectedNode])
+    } else {
+      setCollapsedNodeIds(collapsedNodeIds.filter(n => n !== selectedNode))
+    }
+    console.log(collapsedNodeIds)
+  }
+
   const {
     selections,
-    actives,
-    onNodeClick,
     onCanvasClick,
     onNodePointerOver,
     onNodePointerOut
@@ -63,19 +82,15 @@ function GraphViewer() {
         <Autocomplete
           options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
           groupBy={(option) => option.firstLetter}
-          onChange={(e, v, r) => { rootNodeChanged(v?.id ?? '') }}
+          onChange={(e, v) => { rootNodeChanged(v?.id ?? '') }}
           blurOnSelect
           renderInput={(params) => <TextField {...params} label="Root node:" />} />
       </div>
-
-      <div className="Center" style={{ zIndex: 15, position: 'absolute' }}>
-        <ContextMenu />
-      </div>
-
-      <GraphCanvas 
+      <ContextMenu></ContextMenu>
+      <GraphCanvas
         ref={ref}
         selections={selections}
-        actives={actives}
+        collapsedNodeIds={collapsedNodeIds}
         onNodeClick={onNodeClick}
         onCanvasClick={onCanvasClick}
         onNodePointerOver={onNodePointerOver}
@@ -88,12 +103,13 @@ function GraphViewer() {
 
   function ContextMenu() {
     return (
-      <Menu open={false}>
-      <MenuItem>Copy</MenuItem>
-      <MenuItem>Print</MenuItem>
-      <MenuItem>Highlight</MenuItem>
-      <MenuItem>Email</MenuItem>
-    </Menu>
+      <div className="Center" style={{ zIndex: 15, position: 'absolute' }}>
+        <Menu open={openMenu} onClose={() => setOpenMenu(false)} anchorReference='anchorPosition' anchorPosition={menuPos}>
+          <MenuItem>Find children</MenuItem>
+          <MenuItem>Find parents</MenuItem>
+          <MenuItem onClick={collapseClick}>Expand / Collapse</MenuItem>
+        </Menu>
+      </div>
     )
   }
 }
