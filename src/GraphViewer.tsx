@@ -1,5 +1,5 @@
-import { useContext, useEffect, useRef, useState } from "react"
-import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, useSelection, InternalGraphNode, CollapseProps, getAdjacents } from "reagraph"
+import { act, useContext, useEffect, useRef, useState } from "react"
+import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, InternalGraphNode, CollapseProps, getAdjacents } from "reagraph"
 import { getSubgraph } from "./DependencyManagerProviders/DependencyProvider"
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
@@ -17,6 +17,7 @@ function MockProvider(): CocoaPodsProvider {
 function GraphViewer() {
   const [selections, setSelections] = useState<string[]>([])
   const [actives, setActives] = useState<string[]>([])
+  const [hoverActives, setHoverActives] = useState<string[]>([])
   const [selectedNode, setSelectedNode] = useState('')
   const [openMenu, setOpenMenu] = useState(false)
   const [collapsedNodeIds, setCollapsedNodeIds] = useState<string[]>([])
@@ -71,6 +72,18 @@ function GraphViewer() {
     }
   }
 
+  const onNodePointerOver = (node:string) => {
+    const pointActives = getAdjacents(ref.current!.getGraph(), node, 'out')
+    const ids = [...pointActives.nodes, ...pointActives.edges].filter(e => !actives.includes(e))
+    setActives([...actives, ...ids])
+    setHoverActives(ids)
+  }
+
+  const onNodePointerOut = () => {
+    setActives(actives.filter(e => !hoverActives.includes(e)))
+    setHoverActives([])
+  }
+
   const findChildrenClick = () => {
     setOpenMenu(false)
     setSelections([selectedNode])
@@ -99,6 +112,7 @@ function GraphViewer() {
   function resetSelectionAndActive() {
     setSelections([])
     setActives([])
+    setHoverActives([])
   }
 
   return (
@@ -119,8 +133,8 @@ function GraphViewer() {
         collapsedNodeIds={collapsedNodeIds}
         onNodeClick={onNodeClick}
         onCanvasClick={onCanvasClick}
-        // onNodePointerOver={onNodePointerOver}
-        // onNodePointerOut={onNodePointerOut}
+        onNodePointerOver={(n,e) => onNodePointerOver(n.id)}
+        onNodePointerOut={onNodePointerOut}
         theme={isDarkMode ? darkTheme : lightTheme}
         nodes={nodes}
         edges={edges} />
