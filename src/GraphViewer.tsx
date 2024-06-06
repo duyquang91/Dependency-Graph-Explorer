@@ -4,9 +4,10 @@ import { getSubgraph } from "./DependencyManagerProviders/DependencyProvider"
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
 import { IsDarkModeContext, IsMobileContext } from "./Base"
-import { Autocomplete, Divider, Menu, MenuItem, TextField } from "@mui/material"
+import { Autocomplete, Button, Divider, IconButton, InputAdornment, Menu, MenuItem, Stack, TextField } from "@mui/material"
 import { CocoaPodsProvider } from "./DependencyManagerProviders/CocoaPodsProvider"
 import { ThreeEvent } from '@react-three/fiber'
+import { Clear, ClearAll } from "@mui/icons-material"
 
 function MockProvider(): CocoaPodsProvider {
   const pod = new CocoaPodsProvider()
@@ -15,13 +16,14 @@ function MockProvider(): CocoaPodsProvider {
 }
 
 function GraphViewer() {
+  const [prefix, setPrefix] = useState('')
   const [selections, setSelections] = useState<string[]>([])
   const [actives, setActives] = useState<string[]>([])
   const [hoverActives, setHoverActives] = useState<string[]>([])
   const [selectedNode, setSelectedNode] = useState('')
   const [openMenu, setOpenMenu] = useState(false)
   const [collapsedNodeIds, setCollapsedNodeIds] = useState<string[]>([])
-  const [menuPos, setMenuPos] = useState({top: 0, left: 0})
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
   const ref = useRef<GraphCanvasRef | null>(null)
   const { index } = useParams<{ index: string }>()
   const i = index === undefined ? -1 : Number(index)
@@ -58,7 +60,7 @@ function GraphViewer() {
   const onNodeClick = ((node: InternalGraphNode, props?: CollapseProps, event?: ThreeEvent<MouseEvent>) => {
     resetSelectionAndActive()
     setSelectedNode(node.id)
-    setMenuPos({top: event?.y ?? 0, left: event?.x ?? 0})
+    setMenuPos({ top: event?.y ?? 0, left: event?.x ?? 0 })
     setOpenMenu(true)
   })
 
@@ -72,7 +74,7 @@ function GraphViewer() {
     }
   }
 
-  const onNodePointerOver = (node:string) => {
+  const onNodePointerOver = (node: string) => {
     const pointActives = getAdjacents(ref.current!.getGraph(), node, 'out')
     const ids = [...pointActives.nodes, ...pointActives.edges].filter(e => !actives.includes(e))
     setActives([...actives, ...ids])
@@ -117,15 +119,36 @@ function GraphViewer() {
 
   return (
     <div>
-      <div style={{ zIndex: 9, position: 'absolute', left: 15, top: 15, width: `${isMobile ? '90%' : '40%'}`, padding: 1 }}>
-        <Autocomplete
-          options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
-          groupBy={(option) => option.firstLetter}
-          onChange={(e, v) => { rootNodeChanged(v?.id ?? '') }}
-          blurOnSelect
-          renderInput={(params) => <TextField {...params} label="Root node:" />} />
+      <div style={{ zIndex: 9, position: 'absolute', left: 15, top: 15, width: `${isMobile ? '90%' : '400px'}`, padding: 1 }}>
+        <Stack padding={1} spacing={1}>
+          <Autocomplete
+            size='small'
+            options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
+            groupBy={(option) => option.firstLetter}
+            onChange={(e, v) => { rootNodeChanged(v?.id ?? '') }}
+            blurOnSelect
+            renderInput={(params) => <TextField {...params} label="Root node:" />} />
+          <Stack direction='row' spacing={1}>
+            <TextField value={prefix} onChange={e => setPrefix(e.target.value)} fullWidth label='Prefix name:' size="small" InputProps={{
+              endAdornment: prefix !== '' ? (
+                <IconButton size='small' onClick={() => setPrefix('')}>
+                  <Clear />
+                </IconButton>
+              ) : null
+            }}></TextField>
+            <Button variant='outlined' size='small'>Apply</Button>
+          </Stack>
+        </Stack>
       </div>
-      <ContextMenu></ContextMenu>
+      <div className="Center" style={{ zIndex: 15, position: 'absolute' }}>
+        <Menu open={openMenu} onClose={() => setOpenMenu(false)} anchorReference='anchorPosition' anchorPosition={menuPos}>
+          <MenuItem onClick={findChildrenClick}>Find children</MenuItem>
+          <MenuItem onClick={findParentsClick}>Find parents</MenuItem>
+          <MenuItem onClick={findRelationsClick}>Find relations</MenuItem>
+          <Divider />
+          <MenuItem onClick={collapseClick}>Expand / Collapse</MenuItem>
+        </Menu>
+      </div>
       <GraphCanvas
         ref={ref}
         selections={selections}
@@ -133,27 +156,13 @@ function GraphViewer() {
         collapsedNodeIds={collapsedNodeIds}
         onNodeClick={onNodeClick}
         onCanvasClick={onCanvasClick}
-        onNodePointerOver={(n,e) => onNodePointerOver(n.id)}
+        onNodePointerOver={(n, e) => onNodePointerOver(n.id)}
         onNodePointerOut={onNodePointerOut}
         theme={isDarkMode ? darkTheme : lightTheme}
         nodes={nodes}
         edges={edges} />
     </div>
   )
-
-  function ContextMenu() {
-    return (
-      <div className="Center" style={{ zIndex: 15, position: 'absolute' }}>
-        <Menu open={openMenu} onClose={() => setOpenMenu(false)} anchorReference='anchorPosition' anchorPosition={menuPos}>
-          <MenuItem onClick={findChildrenClick}>Find children</MenuItem>
-          <MenuItem onClick={findParentsClick}>Find parents</MenuItem>
-          <MenuItem onClick={findRelationsClick}>Find relations</MenuItem>
-          <Divider/>
-          <MenuItem onClick={collapseClick}>Expand / Collapse</MenuItem>
-        </Menu>
-      </div>
-    )
-  }
 }
 
 

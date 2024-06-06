@@ -37,6 +37,10 @@
   transform: translate(-50%, -50%);
 }
 
+.MaxWidth {
+  width: 100%;
+}
+
 .Browser {
   width: 50%;
   vertical-align: middle;

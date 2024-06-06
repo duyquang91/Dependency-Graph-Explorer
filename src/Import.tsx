@@ -27,32 +27,39 @@ function Import() {
 
     return (
         isMobile ? (
-            <div> <Content /> </div>
-        ) : (
-            <div className='Browser'> <Content /> </div>
-        )
-    )
-
-    function Content() {
-        return (
             <div className='Import'>
                 <Card>
                     <CardContent>
                         <Stack spacing={2}>
                             <Alert variant='outlined' severity='info'>Choose a Dependency manager then paste its resolved dependency graph file to start exploring</Alert>
                             <TextField variant='outlined' defaultValue={provider.name} select label='Dependency manager:'>
-                                {dependencyManagerProviders.map((item, index) => <MenuItem key={item.name} value={item.name} onClick={(e) => {selectIndex(e, index)}}>{item.name} </MenuItem>)}
+                                {dependencyManagerProviders.map((item, index) => <MenuItem key={item.name} value={item.name} onClick={(e) => { selectIndex(e, index) }}>{item.name} </MenuItem>)}
                             </TextField>
-                            <TextField error={error} variant='outlined' multiline fullWidth label={error ? 'Invalid file format!' : provider.resolvedFileName} rows={8} value={text} onChange={(e) => {setText(e.target.value); setError(false)}} />
-                            <Button variant='contained' disabled={text === ''} onClick={(e) => {startParsing(e)}}>Start</Button>
+                            <TextField error={error} variant='outlined' multiline fullWidth label={error ? 'Invalid file format!' : provider.resolvedFileName} rows={8} value={text} onChange={(e) => { setText(e.target.value); setError(false) }} />
+                            <Button variant='contained' disabled={text === ''} onClick={(e) => { startParsing(e) }}>Start</Button>
                             <Divider>or</Divider>
                             <Button variant='outlined' onClick={(e) => navigate('/graphViewer/-1')}>Try a demo</Button>
                         </Stack>
                     </CardContent>
                 </Card>
-            </div>
-        )
-    }
+            </div>) : (
+            <div className='Browser'>
+                <Card>
+                    <CardContent>
+                        <Stack spacing={2}>
+                            <Alert variant='outlined' severity='info'>Choose a Dependency manager then paste its resolved dependency graph file to start exploring</Alert>
+                            <TextField variant='outlined' defaultValue={provider.name} select label='Dependency manager:'>
+                                {dependencyManagerProviders.map((item, index) => <MenuItem key={item.name} value={item.name} onClick={(e) => { selectIndex(e, index) }}>{item.name} </MenuItem>)}
+                            </TextField>
+                            <TextField error={error} variant='outlined' multiline fullWidth label={error ? 'Invalid file format!' : provider.resolvedFileName} rows={8} value={text} onChange={(e) => { setText(e.target.value); setError(false) }} />
+                            <Button variant='contained' disabled={text === ''} onClick={(e) => { startParsing(e) }}>Start</Button>
+                            <Divider>or</Divider>
+                            <Button variant='outlined' onClick={(e) => navigate('/graphViewer/-1')}>Try a demo</Button>
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </div>)
+    )
 }
 
 export default Import
