@@ -5,33 +5,53 @@ import { SimpleSet } from 'typescript-super-set';
 export class CocoaPodsProvider extends DependencyProviderBase {
 
   constructor() {
-    super('CocoaPods', 'PodFile.lock')
+    super('CocoaPods', 'Podfile.lock')
   }
 
-  removeTextInParentheses(text: string): string {
-    return text.replace(/\(.*?\)/g, '').trim()
+  formatPodName(text: string, prefix: string): { name: string, isValid: boolean } {
+    const pod = text.replace(/\(.*?\)/g, '').trim()
+    const isValid = prefix === '' || pod.substring(0, prefix.length).toLowerCase() === prefix.toLowerCase()
+    return { name: pod.substring(prefix.length), isValid:  isValid}
   }
 
-  setGraphFromFile(file: string) {
-    const data = YAML.parse(file) as { PODS: any[] }
-    if (typeof data === 'object') {
-      let nodes = new Set<string>
-      let edges = new SimpleSet<{source:string, target:string}>((obj1, obj2) => obj1.source === obj2.source && obj1.target === obj2.target ? 0 : 1)
-      data.PODS.forEach(e => {
-        if (typeof e === 'string') {
-          nodes.add(this.removeTextInParentheses(e))
-        } else {
-          for (const key in e) {
-            nodes.add(this.removeTextInParentheses(key))
-            const valueArray = e[key];
-            for (const value of valueArray) {
-              nodes.add( this.removeTextInParentheses(value))
-              edges.add({source: this.removeTextInParentheses(key), target: this.removeTextInParentheses(value) })
+  setGraphFromFile(file: string, prefix: string) {
+    try {
+      const data = YAML.parse(file) as { PODS: any[] }
+      if (typeof data === 'object') {
+        let nodes = new Set<string>
+        let edges = new SimpleSet<{ source: string, target: string }>((obj1, obj2) => obj1.source === obj2.source && obj1.target === obj2.target ? 0 : 1)
+        data.PODS.forEach(e => {
+          if (typeof e === 'string') {
+            const pod = this.formatPodName(e, prefix)
+            if (pod.isValid) {
+              nodes.add(pod.name)
+            }
+          } else {
+            for (const key in e) {
+              const pod = this.formatPodName(key, prefix)
+              if (pod.isValid) {
+                nodes.add(pod.name)
+              }
+              const valueArray = e[key];
+              for (const value of valueArray) {
+                const pod = this.formatPodName(value, prefix)
+                if (pod.isValid) {
+                  nodes.add(pod.name)
+                }
+                const podKey = this.formatPodName(key, prefix)
+                const podValue = this.formatPodName(value, prefix)
+                if (podKey.isValid && podValue.isValid) {
+                  edges.add({ source: podKey.name, target: podValue.name })
+                }
+              }
             }
           }
-        }
-      })
-      this.graph = { nodes: Array.from(nodes), edges: Array.from(edges) }
+        })
+        this.graph = { nodes: Array.from(nodes), edges: Array.from(edges) }
+      }
+    } catch {
+      this.graph = undefined
+      console.log('Failed to parse the data')
     }
   }
 
@@ -71,6 +91,6 @@ PODS:
     - Particle-SDK
     - ParticleSetup/Comm
         `
-    this.setGraphFromFile(mock)
+    this.setGraphFromFile(mock, '')
   }
 }

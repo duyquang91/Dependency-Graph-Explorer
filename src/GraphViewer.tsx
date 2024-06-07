@@ -15,7 +15,6 @@ function MockProvider(): CocoaPodsProvider {
 }
 
 function GraphViewer() {
-  const [prefix, setPrefix] = useState('')
   const [selections, setSelections] = useState<string[]>([])
   const [actives, setActives] = useState<string[]>([])
   const [hoverActives, setHoverActives] = useState<string[]>([])
@@ -66,6 +65,7 @@ function GraphViewer() {
   const collapseClick = () => {
     resetSelectionAndActive()
     setOpenMenu(false)
+
     if (!collapsedNodeIds.includes(selectedNode)) {
       setCollapsedNodeIds([...collapsedNodeIds, selectedNode])
     } else {
@@ -114,6 +114,7 @@ function GraphViewer() {
     setSelections([])
     setActives([])
     setHoverActives([])
+    setSelectedNode('')
   }
 
   return (
@@ -128,16 +129,6 @@ function GraphViewer() {
             onChange={(e, v) => { rootNodeChanged(v?.id ?? '') }}
             blurOnSelect
             renderInput={(params) => <TextField {...params} label="Root node:" />} />
-          <Stack direction='row' spacing={1}>
-            <TextField value={prefix} onChange={e => setPrefix(e.target.value)} fullWidth label='Prefix name:' size="small" InputProps={{
-              endAdornment: prefix !== '' ? (
-                <IconButton size='small' onClick={() => setPrefix('')}>
-                  <Clear />
-                </IconButton>
-              ) : null
-            }}></TextField>
-            <Button variant='outlined' size='small'>Apply</Button>
-          </Stack>
         </Stack>
       </div>
       <div className="Center" style={{ zIndex: 15, position: 'absolute' }}>

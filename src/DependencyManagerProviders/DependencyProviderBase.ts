@@ -16,16 +16,9 @@ export abstract class DependencyProviderBase {
 
   /**
   * Update `graph` in this func otherwise invalid file format will be thrown.
+  * If `prefix` is empty then return original graph otherwise filter out unmatched nodes
   */
-  abstract setGraphFromFile(file: string): void
-  
-  getNewGraph(prefix: string): GraphType {
-    const graph = this.graph ?? { nodes: [], edges: [] }
-    return { 
-      nodes: graph.nodes.filter(e => e.substring(0, prefix.length-1).toLowerCase === prefix.toLowerCase),
-      edges: graph.edges.filter(e => e.source.substring(0, prefix.length-1).toLowerCase === prefix.toLowerCase && e.target.substring(0, prefix.length-1).toLowerCase === prefix.toLowerCase),
-    }
-  }
+  abstract setGraphFromFile(file: string, prefix:string): void
 
   /**
   * Return a new sub-graph from a root node
