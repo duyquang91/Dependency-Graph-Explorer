@@ -1,13 +1,12 @@
-import { act, useContext, useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, InternalGraphNode, CollapseProps, getAdjacents } from "reagraph"
-import { getSubgraph } from "./DependencyManagerProviders/DependencyProvider"
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
 import { IsDarkModeContext, IsMobileContext } from "./Base"
 import { Autocomplete, Button, Divider, IconButton, InputAdornment, Menu, MenuItem, Stack, TextField } from "@mui/material"
 import { CocoaPodsProvider } from "./DependencyManagerProviders/CocoaPodsProvider"
 import { ThreeEvent } from '@react-three/fiber'
-import { Clear, ClearAll } from "@mui/icons-material"
+import { Clear } from "@mui/icons-material"
 
 function MockProvider(): CocoaPodsProvider {
   const pod = new CocoaPodsProvider()
@@ -39,18 +38,18 @@ function GraphViewer() {
     ref.current?.resetControls()
   }, [nodes, edges])
 
-  const options = provider.graph!.nodes.map((option) => {
-    const firstLetter = option.id[0].toUpperCase();
+  const options = provider.graph!.nodes.map(e => {
+    const firstLetter = e[0].toUpperCase();
     return {
       firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
-      ...option,
+      id: e
     }
   })
 
   const rootNodeChanged = (value: string) => {
     if (value === '') { return }
     resetSelectionAndActive()
-    let graph = getSubgraph(value!, provider.graph!)
+    let graph = provider.getSubgraph(value)
     setNodes(graph.nodes)
     setEdges(graph.edges)
     setActives([value])
@@ -124,7 +123,8 @@ function GraphViewer() {
           <Autocomplete
             size='small'
             options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
-            groupBy={(option) => option.firstLetter}
+            groupBy={e => e.firstLetter}
+            getOptionLabel={e => e.id}
             onChange={(e, v) => { rootNodeChanged(v?.id ?? '') }}
             blurOnSelect
             renderInput={(params) => <TextField {...params} label="Root node:" />} />
@@ -159,11 +159,10 @@ function GraphViewer() {
         onNodePointerOver={(n, e) => onNodePointerOver(n.id)}
         onNodePointerOut={onNodePointerOut}
         theme={isDarkMode ? darkTheme : lightTheme}
-        nodes={nodes}
-        edges={edges} />
+        nodes={nodes.map(e => ({ id: e, label: e }))}
+        edges={edges.map(e => ({ id: e.source + e.target, source:e.source, target:e.target }))} />
     </div>
   )
 }
-
 
 export default GraphViewer

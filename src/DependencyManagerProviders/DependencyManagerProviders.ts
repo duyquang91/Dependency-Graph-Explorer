@@ -1,6 +1,6 @@
 import { CocoaPodsProvider } from "./CocoaPodsProvider";
-import { DependencyProviderInterface } from "./DependencyProvider";
+import { DependencyProviderBase } from "./DependencyProviderBase";
 
-export const dependencyManagerProviders: DependencyProviderInterface[] = [
+export const dependencyManagerProviders: DependencyProviderBase[] = [
     new CocoaPodsProvider()
 ]

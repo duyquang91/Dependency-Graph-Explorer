@@ -14,10 +14,11 @@ function Import() {
     const selectIndex = (e: React.MouseEvent, i: number) => {
         selectedIndex = i
         setProvider(dependencyManagerProviders[i])
+        setText('')
     }
     const startParsing = (e: React.MouseEvent) => {
-        provider.updateResolvedFile(text)
-        if (provider.isValid) {
+        provider.setGraphFromFile(text)
+        if (provider.graph) {
             setError(false)
             navigate(`/graphViewer/${selectedIndex}`)
         } else {

@@ -1,53 +1,42 @@
-import { GraphNode, GraphEdge } from 'reagraph';
-import { DependencyProviderInterface } from './DependencyProvider'
+import { DependencyProviderBase } from './DependencyProviderBase'
 import YAML from 'yaml'
-import { string } from 'yaml/dist/schema/common/string';
-import { Comparator, SimpleSet } from 'typescript-super-set';
+import { SimpleSet } from 'typescript-super-set';
 
-export class CocoaPodsProvider implements DependencyProviderInterface {
-    name: string
-    resolvedFileName: string
-    isValid: Boolean
-    graph: { nodes: GraphNode[]; edges: GraphEdge[]; } | undefined
+export class CocoaPodsProvider extends DependencyProviderBase {
 
-    constructor() {
-        this.name = 'CocoaPods'
-        this.resolvedFileName = 'Podfile.lock'
-        this.isValid = false
-    }
+  constructor() {
+    super('CocoaPods', 'PodFile.lock')
+  }
 
-    removeTextInParentheses(text: string): string {
-        return text.replace(/\(.*?\)/g, '').trim()
-    }
+  removeTextInParentheses(text: string): string {
+    return text.replace(/\(.*?\)/g, '').trim()
+  }
 
-    updateResolvedFile(file: string) {
-        const data = YAML.parse(file) as { PODS: any[] }
-        if (typeof data === 'object') {
-            this.isValid = true
-            let nodes = new SimpleSet<GraphNode>((obj1, obj2) => obj1.id === obj2.id ? 0 : 1)
-            let edges = new SimpleSet<GraphEdge>((obj1, obj2) => obj1.id === obj2.id ? 0 : 1)
-            data.PODS.forEach(e => {
-                if (typeof e === 'string') {
-                    nodes.add({ id: this.removeTextInParentheses(e), label: this.removeTextInParentheses(e) })
-                } else {
-                    for (const key in e) {
-                        nodes.add({ id: this.removeTextInParentheses(key), label: this.removeTextInParentheses(key) })
-                        const valueArray = e[key];
-                        for (const value of valueArray) {
-                            nodes.add({ id: this.removeTextInParentheses(value), label: this.removeTextInParentheses(value) })
-                            edges.add({ id: this.removeTextInParentheses(key) + this.removeTextInParentheses(value), source: this.removeTextInParentheses(key), target: this.removeTextInParentheses(value) })
-                        }
-                    }
-                }
-            })
-            this.graph = { nodes: Array.from(nodes), edges: Array.from(edges) }
+  setGraphFromFile(file: string) {
+    const data = YAML.parse(file) as { PODS: any[] }
+    if (typeof data === 'object') {
+      let nodes = new Set<string>
+      let edges = new SimpleSet<{source:string, target:string}>((obj1, obj2) => obj1.source === obj2.source && obj1.target === obj2.target ? 0 : 1)
+      data.PODS.forEach(e => {
+        if (typeof e === 'string') {
+          nodes.add(this.removeTextInParentheses(e))
         } else {
-            this.isValid = false
+          for (const key in e) {
+            nodes.add(this.removeTextInParentheses(key))
+            const valueArray = e[key];
+            for (const value of valueArray) {
+              nodes.add( this.removeTextInParentheses(value))
+              edges.add({source: this.removeTextInParentheses(key), target: this.removeTextInParentheses(value) })
+            }
+          }
         }
+      })
+      this.graph = { nodes: Array.from(nodes), edges: Array.from(edges) }
     }
+  }
 
-    updateMockResolvedFile() {
-        const mock = `
+  updateMockResolvedFile() {
+    const mock = `
 PODS:
   - 1PasswordExtension (1.8.5)
   - AFNetworking (3.2.1):
@@ -82,6 +71,6 @@ PODS:
     - Particle-SDK
     - ParticleSetup/Comm
         `
-        this.updateResolvedFile(mock)
-    }
+    this.setGraphFromFile(mock)
+  }
 }
