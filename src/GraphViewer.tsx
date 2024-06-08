@@ -3,10 +3,9 @@ import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, InternalGraphNode, 
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
 import { IsDarkModeContext, IsMobileContext } from "./Base"
-import { Autocomplete, Button, Divider, IconButton, InputAdornment, Menu, MenuItem, Stack, TextField } from "@mui/material"
+import { Alert, Autocomplete, Divider, Menu, MenuItem, Stack, TextField } from "@mui/material"
 import { CocoaPodsProvider } from "./DependencyManagerProviders/CocoaPodsProvider"
 import { ThreeEvent } from '@react-three/fiber'
-import { Clear } from "@mui/icons-material"
 
 function MockProvider(): CocoaPodsProvider {
   const pod = new CocoaPodsProvider()
@@ -20,6 +19,7 @@ function GraphViewer() {
   const [hoverActives, setHoverActives] = useState<string[]>([])
   const [selectedNode, setSelectedNode] = useState('')
   const [openMenu, setOpenMenu] = useState(false)
+  const [hideGuide, setHideGuide] = useState(false)
   const [collapsedNodeIds, setCollapsedNodeIds] = useState<string[]>([])
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
   const ref = useRef<GraphCanvasRef | null>(null)
@@ -59,6 +59,7 @@ function GraphViewer() {
     resetSelectionAndActive()
     setSelectedNode(node.id)
     setMenuPos({ top: event?.y ?? 0, left: event?.x ?? 0 })
+    setHideGuide(true)
     setOpenMenu(true)
   })
 
@@ -88,22 +89,22 @@ function GraphViewer() {
   const findChildrenClick = () => {
     setOpenMenu(false)
     setSelections([selectedNode])
-    const actives = getAdjacents(ref.current!.getGraph(), selectedNode, 'out')
-    setActives([...actives.nodes, ...actives.edges])
+    const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'out')
+    setActives([...active.nodes, ...active.edges])
   }
 
   const findParentsClick = () => {
     setOpenMenu(false)
     setSelections([selectedNode])
-    const actives = getAdjacents(ref.current!.getGraph(), selectedNode, 'in')
-    setActives([...actives.nodes, ...actives.edges])
+    const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'in')
+    setActives([...active.nodes, ...active.edges])
   }
 
   const findRelationsClick = () => {
     setOpenMenu(false)
     setSelections([selectedNode])
-    const actives = getAdjacents(ref.current!.getGraph(), selectedNode, 'all')
-    setActives([...actives.nodes, ...actives.edges])
+    const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'all')
+    setActives([...active.nodes, ...active.edges])
   }
 
   const onCanvasClick = () => {
@@ -114,7 +115,6 @@ function GraphViewer() {
     setSelections([])
     setActives([])
     setHoverActives([])
-    setSelectedNode('')
   }
 
   return (
@@ -129,6 +129,7 @@ function GraphViewer() {
             onChange={(e, v) => { rootNodeChanged(v?.id ?? '') }}
             blurOnSelect
             renderInput={(params) => <TextField {...params} label="Root node:" />} />
+            { !hideGuide && (<Alert  variant='outlined' severity='info'>Click to the node to see more actions</Alert>)}
         </Stack>
       </div>
       <div className="Center" style={{ zIndex: 15, position: 'absolute' }}>
