@@ -1,11 +1,12 @@
 import { useContext, useEffect, useRef, useState } from "react"
-import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, InternalGraphNode, CollapseProps, getAdjacents } from "reagraph"
+import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, InternalGraphNode, CollapseProps, getAdjacents, Graph } from "reagraph"
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
 import { IsDarkModeContext, IsMobileContext } from "./Base"
 import { Alert, Autocomplete, Divider, Menu, MenuItem, Stack, TextField } from "@mui/material"
 import { CocoaPodsProvider } from "./DependencyManagerProviders/CocoaPodsProvider"
 import { ThreeEvent } from '@react-three/fiber'
+import { GraphType } from "./DependencyManagerProviders/DependencyProviderBase"
 
 function MockProvider(): CocoaPodsProvider {
   const pod = new CocoaPodsProvider()
@@ -28,8 +29,9 @@ function GraphViewer() {
   const isDarkMode = useContext(IsDarkModeContext)
   const isMobile = useContext(IsMobileContext)
   const provider = i === -1 ? MockProvider() : dependencyManagerProviders[i]
-  const [nodes, setNodes] = useState(provider.graph!.nodes)
-  const [edges, setEdges] = useState(provider.graph!.edges)
+  const defaultGraph = mapGraph(provider.graph!)
+  const [nodes, setNodes] = useState(defaultGraph.nodes)
+  const [edges, setEdges] = useState(defaultGraph.edges)
 
   useEffect(() => {
     ref.current?.fitNodesInView()
@@ -45,10 +47,17 @@ function GraphViewer() {
     }
   })
 
+  function mapGraph(graph: GraphType): Graph {
+    return {
+      nodes: graph.nodes.map(e => ({ id: e, label: e })),
+      edges: graph.edges.map(e => ({ id: e.source + e.target, source:e.source, target:e.target }))
+    }
+  }
+
   const rootNodeChanged = (value: string) => {
     if (value === '') { return }
     resetSelectionAndActive()
-    let graph = provider.getSubgraph(value)
+    let graph = mapGraph(provider.getSubgraph(value))
     setNodes(graph.nodes)
     setEdges(graph.edges)
     setActives([value])
@@ -151,8 +160,8 @@ function GraphViewer() {
         onNodePointerOver={(n, e) => onNodePointerOver(n.id)}
         onNodePointerOut={onNodePointerOut}
         theme={isDarkMode ? darkTheme : lightTheme}
-        nodes={nodes.map(e => ({ id: e, label: e }))}
-        edges={edges.map(e => ({ id: e.source + e.target, source:e.source, target:e.target }))} />
+        nodes={nodes}
+        edges={edges} />
     </div>
   )
 }

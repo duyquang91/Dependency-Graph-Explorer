@@ -1,5 +1,5 @@
 
-type GraphType = {
+export type GraphType = {
     nodes: string[]
     edges: { source: string, target: string }[]
 }

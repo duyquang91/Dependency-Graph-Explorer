@@ -22,20 +22,21 @@ function Import() {
     const [text, setText] = useState('')
     const [prefix, setPrefix] = useState('')
     const [error, setError] = useState(false)
-    var selectedIndex = 0
+    const [index, setIndex] = useState(0)
     const [provider, setProvider] = useState(dependencyManagerProviders[0])
     const isMobile: Boolean = useContext(IsMobileContext)
     const selectIndex = (e: React.MouseEvent, i: number) => {
-        selectedIndex = i
+        setIndex(i)
         setProvider(dependencyManagerProviders[i])
         setText('')
         setPrefix('')
+        setError(false)
     }
     const startParsing = (e: React.MouseEvent) => {
         provider.setGraphFromFile(text, prefix.trim())
         if (provider.graph) {
             setError(false)
-            navigate(`/graphViewer/${selectedIndex}`)
+            navigate(`/graphViewer/${index}`)
         } else {
             setError(true)
         }
