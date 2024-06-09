@@ -1,9 +1,10 @@
 import React, { ChangeEvent, ChangeEventHandler, useContext, useState } from 'react'
-import { Alert, Button, Card, CardContent, Divider, Grid, IconButton, MenuItem, Stack, TextField, styled } from '@mui/material'
+import { Alert, Button, Card, CardContent, Divider, Grid, IconButton, MenuItem, Stack, TextField, styled, Typography, Link } from '@mui/material'
 import { dependencyManagerProviders } from './DependencyManagerProviders/DependencyManagerProviders'
 import { IsMobileContext } from './Base'
 import { useNavigate } from 'react-router-dom'
-import { Clear, CloudUpload } from '@mui/icons-material'
+import { Clear, CloudUpload, Lan, LanOutlined, NetworkCell, NotListedLocationSharp } from '@mui/icons-material'
+import ChainMap from 'three/examples/jsm/renderers/common/ChainMap'
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -57,7 +58,8 @@ function Import() {
             <Card>
                 <CardContent>
                     <Stack spacing={2}>
-                        <Alert variant='outlined' severity='info'>Choose a Dependency manager then paste its resolved dependency graph file to start exploring</Alert>
+                        <Typography variant='h4'> <LanOutlined/> Dependency Graph Explorer</Typography>
+                        <Divider></Divider>
                         <TextField variant='outlined' defaultValue={provider.name} select label='Dependency manager:'>
                             {dependencyManagerProviders.map((item, index) => <MenuItem key={item.name} value={item.name} onClick={(e) => { selectIndex(e, index) }}>{item.name} </MenuItem>)}
                         </TextField>
@@ -75,6 +77,8 @@ function Import() {
                             <Button fullWidth variant='contained' disabled={text === ''} onClick={(e) => { startParsing(e) }}>Start</Button>
                             <Button fullWidth variant='outlined' onClick={(e) => navigate('/graphViewer/-1')}>Try a demo</Button>
                         </Stack>
+                        <Divider />
+                        <Typography variant='caption' color='GrayText'>This project is open-source. Feel free to contribute more Dependency managers on <Link href="https://github.com/duyquang91/Dependency-Graph-Explorer" target="_blank">github</Link>.</Typography>
                     </Stack>
                 </CardContent>
             </Card>
