@@ -1,5 +1,5 @@
-import { useContext, useEffect, useRef, useState } from "react"
-import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, InternalGraphNode, CollapseProps, getAdjacents, Graph } from "reagraph"
+import { FC, useContext, useEffect, useRef, useState } from "react"
+import { GraphCanvas, GraphCanvasRef, darkTheme, lightTheme, InternalGraphNode, CollapseProps, getAdjacents, Graph, LayoutTypes } from "reagraph"
 import { useParams } from "react-router-dom"
 import { dependencyManagerProviders } from "./DependencyManagerProviders/DependencyManagerProviders"
 import { IsDarkModeContext, IsMobileContext } from "./Base"
@@ -32,25 +32,17 @@ function GraphViewer() {
   const defaultGraph = mapGraph(provider.graph!)
   const [nodes, setNodes] = useState(defaultGraph.nodes)
   const [edges, setEdges] = useState(defaultGraph.edges)
+  const [layout, setLayout] = useState<LayoutTypes>('forceDirected2d')
 
-  useEffect(() => {
-    ref.current?.fitNodesInView()
-    ref.current?.centerGraph()
-    ref.current?.resetControls()
-  }, [nodes, edges])
-
-  const options = provider.graph!.nodes.map(e => {
-    const firstLetter = e[0].toUpperCase();
-    return {
-      firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
-      id: e
-    }
-  })
+  // useEffect(() => {
+  //   ref.current?.fitNodesInView()
+  //   ref.current?.centerGraph()
+  // }, [nodes, edges, layout])
 
   function mapGraph(graph: GraphType): Graph {
     return {
       nodes: graph.nodes.map(e => ({ id: e, label: e })),
-      edges: graph.edges.map(e => ({ id: e.source + e.target, source:e.source, target:e.target }))
+      edges: graph.edges.map(e => ({ id: e.source + e.target, source: e.source, target: e.target }))
     }
   }
 
@@ -60,8 +52,17 @@ function GraphViewer() {
     let graph = mapGraph(provider.getSubgraph(value))
     setNodes(graph.nodes)
     setEdges(graph.edges)
-    setActives([value])
-    setTimeout(() => setCollapsedNodeIds([]), 500)
+    setActives([value])    
+    resetGraph()
+  }
+
+  const onGraphStyleChanged = (e: LayoutTypes) => {
+    setLayout(e)
+    resetGraph()
+  }
+
+  function resetGraph() {
+    setTimeout(() => { setCollapsedNodeIds([]); ref.current?.fitNodesInView(); ref.current?.centerGraph() }, 500)
   }
 
   const onNodeClick = ((node: InternalGraphNode, props?: CollapseProps, event?: ThreeEvent<MouseEvent>) => {
@@ -71,17 +72,6 @@ function GraphViewer() {
     setHideGuide(true)
     setOpenMenu(true)
   })
-
-  const collapseClick = () => {
-    resetSelectionAndActive()
-    setOpenMenu(false)
-
-    if (!collapsedNodeIds.includes(selectedNode)) {
-      setCollapsedNodeIds([...collapsedNodeIds, selectedNode])
-    } else {
-      setCollapsedNodeIds(collapsedNodeIds.filter(n => n !== selectedNode))
-    }
-  }
 
   const onNodePointerOver = (node: string) => {
     const pointActives = getAdjacents(ref.current!.getGraph(), node, 'out')
@@ -95,25 +85,54 @@ function GraphViewer() {
     setHoverActives([])
   }
 
-  const findChildrenClick = () => {
-    setOpenMenu(false)
-    setSelections([selectedNode])
-    const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'out')
-    setActives([...active.nodes, ...active.edges])
-  }
+  const nodeMenuOnClick = (index: NodeMenuIndexClick) => {
+    switch (index) {
+      case NodeMenuIndexClick.SetAsRootNode: {
+        setOpenMenu(false)
+        rootNodeChanged(selectedNode)
+        break
+      }
+      case NodeMenuIndexClick.FindChildren: {
+        setOpenMenu(false)
+        setSelections([selectedNode])
+        const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'out')
+        setActives([...active.nodes, ...active.edges])
+        break
+      }
 
-  const findParentsClick = () => {
-    setOpenMenu(false)
-    setSelections([selectedNode])
-    const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'in')
-    setActives([...active.nodes, ...active.edges])
-  }
+      case NodeMenuIndexClick.FindParent: {
+        setOpenMenu(false)
+        setSelections([selectedNode])
+        const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'in')
+        setActives([...active.nodes, ...active.edges])
+        break
+      }
 
-  const findRelationsClick = () => {
-    setOpenMenu(false)
-    setSelections([selectedNode])
-    const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'all')
-    setActives([...active.nodes, ...active.edges])
+      case NodeMenuIndexClick.FindRelates: {
+        setOpenMenu(false)
+        setSelections([selectedNode])
+        const active = getAdjacents(ref.current!.getGraph(), selectedNode, 'all')
+        setActives([...active.nodes, ...active.edges])
+        break
+      }
+
+      case NodeMenuIndexClick.Collapse: {
+        resetSelectionAndActive()
+        setOpenMenu(false)
+
+        if (!collapsedNodeIds.includes(selectedNode)) {
+          setCollapsedNodeIds([...collapsedNodeIds, selectedNode])
+        } else {
+          setCollapsedNodeIds(collapsedNodeIds.filter(n => n !== selectedNode))
+        }
+        break
+      }
+
+      case NodeMenuIndexClick.Close: {
+        setOpenMenu(false)
+        break
+      }
+    }
   }
 
   const onCanvasClick = () => {
@@ -129,29 +148,17 @@ function GraphViewer() {
   return (
     <div>
       <div style={{ zIndex: 9, position: 'absolute', left: 15, top: 15, width: `${isMobile ? '90%' : '400px'}`, padding: 1 }}>
-        <Stack padding={1} spacing={1}>
-          <Autocomplete
-            size='small'
-            options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
-            groupBy={e => e.firstLetter}
-            getOptionLabel={e => e.id}
-            onChange={(e, v) => { rootNodeChanged(v?.id ?? '') }}
-            blurOnSelect
-            renderInput={(params) => <TextField {...params} label="Root node:" />} />
-            { !hideGuide && (<Alert  variant='outlined' severity='info'>Click to the node to see more actions</Alert>)}
+        <Stack padding={1} spacing={2}>
+          <ChooseGraphType onChanged={onGraphStyleChanged} />
+          <ChooseRootNode nodes={provider.graph!.nodes} hideGuide={hideGuide} onRootNodeChanged={rootNodeChanged} />
         </Stack>
       </div>
       <div className="Center" style={{ zIndex: 15, position: 'absolute' }}>
-        <Menu open={openMenu} onClose={() => setOpenMenu(false)} anchorReference='anchorPosition' anchorPosition={menuPos}>
-          <MenuItem onClick={findChildrenClick}>Find children</MenuItem>
-          <MenuItem onClick={findParentsClick}>Find parents</MenuItem>
-          <MenuItem onClick={findRelationsClick}>Find relations</MenuItem>
-          <Divider />
-          <MenuItem onClick={collapseClick}>Expand / Collapse</MenuItem>
-        </Menu>
+        <NodeMenu openMenu={openMenu} menuPos={menuPos} onClick={nodeMenuOnClick} />
       </div>
       <GraphCanvas
         ref={ref}
+        layoutType={layout}
         selections={selections}
         actives={actives}
         collapsedNodeIds={collapsedNodeIds}
@@ -163,6 +170,70 @@ function GraphViewer() {
         nodes={nodes}
         edges={edges} />
     </div>
+  )
+}
+
+enum NodeMenuIndexClick {
+  SetAsRootNode,
+  Close,
+  FindChildren,
+  FindParent,
+  FindRelates,
+  Collapse
+}
+
+const NodeMenu: FC<{ openMenu: boolean, menuPos: { top: number, left: number }, onClick: (index: NodeMenuIndexClick) => void }> = (props) => {
+  return (
+    <Menu open={props.openMenu} onClose={() => props.onClick(NodeMenuIndexClick.Close)} anchorReference='anchorPosition' anchorPosition={props.menuPos}>
+      <MenuItem onClick={() => props.onClick(NodeMenuIndexClick.SetAsRootNode)}>Set as root node</MenuItem>
+      <Divider />
+      <MenuItem onClick={() => props.onClick(NodeMenuIndexClick.FindChildren)}>Find children</MenuItem>
+      <MenuItem onClick={() => props.onClick(NodeMenuIndexClick.FindParent)}>Find parents</MenuItem>
+      <MenuItem onClick={() => props.onClick(NodeMenuIndexClick.FindRelates)}>Find relations</MenuItem>
+      <Divider />
+      <MenuItem onClick={() => props.onClick(NodeMenuIndexClick.Collapse)}>Expand / Collapse</MenuItem>
+    </Menu>
+  )
+}
+
+const ChooseRootNode: FC<{ nodes: string[], hideGuide: boolean, onRootNodeChanged: (value: string) => void }> = (props) => {
+  const options = props.nodes.map(e => {
+    const firstLetter = e[0].toUpperCase();
+    return {
+      firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
+      id: e
+    }
+  })
+
+  return (
+    <>
+      <Autocomplete
+        size='small'
+        options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
+        groupBy={e => e.firstLetter}
+        getOptionLabel={e => e.id}
+        onChange={(e, v) => { props.onRootNodeChanged(v?.id ?? '') }}
+        blurOnSelect
+        renderInput={(params) => <TextField {...params} label="Root node:" />} />
+      {!props.hideGuide && (<Alert variant='outlined' severity='info'>Click to the node to see more actions</Alert>)}
+    </>
+  )
+}
+
+const ChooseGraphType: FC<{onChanged: (type: LayoutTypes) => void}> = (props) => {
+  const types = [
+    {label:'Network', id:'forceDirected2d'}, 
+    {label:'Left to right', id:'treeLr2d'}, 
+    {label:'Top to down', id:'treeTd2d'}
+  ]
+
+  return (
+    <Autocomplete
+        size='small'
+        options={types}
+        onChange={(e, v) => { props.onChanged(v!.id as LayoutTypes) }}
+        blurOnSelect
+        renderInput={(params) => <TextField {...params} label="Graph style:" />} />
   )
 }
 

@@ -19,24 +19,28 @@ export class CocoaPodsProvider extends DependencyProviderBase {
       const data = YAML.parse(file) as { PODS: any[] }
       if (typeof data === 'object') {
         let nodes = new Set<string>
+        nodes.add('PODS')
         let edges = new SimpleSet<{ source: string, target: string }>((obj1, obj2) => obj1.source === obj2.source && obj1.target === obj2.target ? 0 : 1)
         data.PODS.forEach(e => {
           if (typeof e === 'string') {
             const pod = this.formatPodName(e, prefix)
             if (pod.isValid) {
               nodes.add(pod.name)
+              edges.add({ source: 'PODS', target: pod.name })
             }
           } else {
             for (const key in e) {
               const pod = this.formatPodName(key, prefix)
               if (pod.isValid) {
                 nodes.add(pod.name)
+                edges.add({ source: 'PODS', target: pod.name })
               }
               const valueArray = e[key];
               for (const value of valueArray) {
                 const pod = this.formatPodName(value, prefix)
                 if (pod.isValid) {
                   nodes.add(pod.name)
+                  
                 }
                 const podKey = this.formatPodName(key, prefix)
                 const podValue = this.formatPodName(value, prefix)
